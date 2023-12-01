@@ -10,7 +10,13 @@ db:
     MYSQL_PASSWORD: alongka
   ports:
     - 3306:3306
-  restart:  always
+
+web:
+  build: ./datatable/
+  ports:
+    - 3000:3000
+  #environment:
+    #VITE_API: http://192.168.99.100:3001
 
 api:
   build: ./api/
@@ -24,13 +30,6 @@ api:
     DB_USER: alongka
     DB_PASSWORD: alongka
   restart: always
-    
-web:
-  build: ./datatable/
-  ports:
-    - 3000:3000
-  environment:
-    VITE_API: http://192.168.99.100:3001
 
 phpmyadmin:
   image: phpmyadmin/phpmyadmin

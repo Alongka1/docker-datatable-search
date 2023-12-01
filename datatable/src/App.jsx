@@ -6,18 +6,24 @@ const columns = [
     {
         name: 'ID',
         selector: row => row.id,
+        sortable: true,
+        width: '50px'
+    },
+    {
+        name: 'Cover Image',
+        cell: row => <img src={row.coverimage} width={100} alt={row.name} />,
+        width: '150px'
     },
     {
         name: 'Name',
         selector: row => row.name,
+        sortable: true,
+        width: '150px'
     },
     {
         name: 'Detail',
         selector: row => row.detail,
-    },
-    {
-        name: 'Cover Image',
-        selector: row => row.coverimage,
+        width: '750px'
     },
     {
         name: 'Latitude',
@@ -37,15 +43,24 @@ export default function App() {
   const [totalRows, setTotalRows] = useState(0);
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState('');
+  const [sortColumnDir, setSortColumnDir] = useState('');
+  const [search, setSearch] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
-    //import.meta.env.VITE_API+
-    console.log(page, ' : ', perPage);
-    const response = await axios.get(`http://192.168.99.100:3001/api/attractions?page=${page}&per_page=${perPage}`)
-    console.log(response.data);
+    var url = `${import.meta.env.VITE_API}/api/attractions?page=${page}&per_page=${perPage}`;
+    if (search) {
+	url += `&search=${search}`;
+    }
+    if (sortColumn) {
+	url += `&sort_column=${sortColumn}&sort_direction=${sortColumnDir}`;
+    }
+    //console.log(url);
+    const response = await axios.get(url);
+    //console.log(response.data);
     setData(response.data.data);
-    setPerPage(response.data.total);
+    setTotalRows(response.data.total);
     setLoading(false);
   }
   
@@ -57,12 +72,33 @@ export default function App() {
     setPerPage(newPerPage);
   }
 
+  const handleSort = async (column, sortDirection) => {
+    setSortColumn(column.name);
+    setSortColumnDir(sortDirection);
+  }
+
+  const handleSearchChange = (event) => {
+	setSearch(event.target.value);
+  }
+
+  const handleSearchSubmit = (event) => {
+	event.preventDefault();
+	fetchData();
+  }
+
   useEffect(() => {
     fetchData();
-  },[page, perPage])
+  }, [page, perPage, sortColumn, sortColumnDir] );
 
   return (
     <>
+      <form onSubmit={handleSearchSubmit}>
+	<label>
+	Search:
+	<input type="text" name="search" onChange={handleSearchChange} />
+	</label>
+	<input type="submit" value="Submit" />
+      </form>
       <DataTable
             title="Attraction"
             columns={columns}
@@ -71,8 +107,9 @@ export default function App() {
             pagination
             paginationServer
             paginationTotalRows={totalRows}
-            onChangeRowsPerpage={handlePerRowsChange}
+            onChangeRowsPerPage={handlePerRowsChange}
             onChangePage={handlePageChange}
+            onSort={handleSort}
         />
     </>
   )
