@@ -1,0 +1,41 @@
+db:
+  image: mysql
+  volumes:
+    - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  command: --default-authentication-plugin=mysql_native_password
+  environment:
+    MYSQL_ROOT_PASSWORD: root
+    MYSQL_DATABASE: sample
+    MYSQL_USER: alongka
+    MYSQL_PASSWORD: alongka
+  ports:
+    - 3306:3306
+
+web:
+  build: ./datatable/
+  ports:
+    - 3000:3000
+  #environment:
+    #VITE_API: http://192.168.99.100:3001
+
+api:
+  build: ./api/
+  ports:
+    - 3001:3001
+  links:
+    - db
+  environment:
+    DB_HOST: db
+    DB_DATABASE: sample
+    DB_USER: alongka
+    DB_PASSWORD: alongka
+  restart: always
+
+phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  links:
+    - db
+  environment:
+    PMA_HOST: db
+  ports:
+    - 3002:80

@@ -6,8 +6,6 @@ COPY package*.json ./
 
 RUN npm ci
 
-RUN npm i react-data-table-component axios
-
 COPY . .
 
 RUN npm run build
